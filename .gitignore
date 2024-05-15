@@ -30,3 +30,18 @@
 *.exe
 *.out
 *.app
+
+# KiCad backup directories
+*-backups/
+
+# temporary directories
+tmp/
+
+# KICad cache files
+*-cache
+
+# anything marked as private
+*private/
+
+# Mac technical files
+*DS_Store
