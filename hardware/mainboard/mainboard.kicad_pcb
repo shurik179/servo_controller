@@ -315,10 +315,10 @@
       (net 5 "/POT2") (pinfunction "2") (pintype "passive") (tstamp d605b229-da89-4886-8444-7a2fcf015a06))
     (pad "3" thru_hole circle (at 0 -5 90) (size 1.8 1.8) (drill 1) (layers "*.Cu" "*.Mask")
       (net 4 "GND") (pinfunction "3") (pintype "passive") (tstamp c67c2887-49aa-4992-b200-bdd70ed56f1d))
-    (model "${KICAD6_3DMODEL_DIR}/Potentiometer_THT.3dshapes/Potentiometer_Bourns_PTV09A-1_Single_Vertical.wrl"
-      (offset (xyz 0 0 0))
+    (model "${KICAD7_3RD_PARTY}/3d_models/R-0904N-L-25KS.step"
+      (offset (xyz 7 2.5 0))
       (scale (xyz 1 1 1))
-      (rotate (xyz 0 0 0))
+      (rotate (xyz 0 0 -90))
     )
   )
 
@@ -608,7 +608,7 @@
       (stroke (width 0.25) (type solid)) (layer "Dwgs.User") (tstamp 6d9b7bad-3d58-4f41-b9f9-219a9bb6493c))
     (fp_arc (start -19.901865 15.815496) (mid -19.151865 16.565496) (end -19.901865 17.315496)
       (stroke (width 0.25) (type solid)) (layer "Dwgs.User") (tstamp 492e1f9f-be21-4795-ab05-4dff0d6c7506))
-    (fp_arc (start -2.503865 17.198296) (mid -3.253849 16.448296) (end -2.503865 15.698295)
+    (fp_arc (start -2.503865 17.198296) (mid -3.253848 16.448296) (end -2.503865 15.698295)
       (stroke (width 0.25) (type solid)) (layer "Dwgs.User") (tstamp b3bffd01-cf06-41fd-8c7d-599781b1ccca))
     (fp_arc (start -2.503864 17.498295) (mid -3.553865 16.448295) (end -2.503864 15.398295)
       (stroke (width 0.25) (type solid)) (layer "Dwgs.User") (tstamp aba4b656-af36-4be9-9725-128332287709))
@@ -842,7 +842,7 @@
       (net 4 "GND") (pinfunction "B") (pintype "passive") (tstamp 72007166-4a49-4d0f-b981-bb3f4245b03d))
     (pad "2" thru_hole circle (at 6.5 4.5) (size 1.7 1.7) (drill 1) (layers "*.Cu" "*.Mask")
       (net 4 "GND") (pinfunction "B") (pintype "passive") (tstamp 1f7ffad1-10a8-4d90-9d20-ee0dea232e7d))
-    (model "${KICAD6_3DMODEL_DIR}/Button_Switch_THT.3dshapes/SW_TH_Tactile_Omron_B3F-10xx.wrl"
+    (model "${KICAD6_3DMODEL_DIR}/Button_Switch_THT.3dshapes/SW_PUSH_6mm_H13mm.wrl"
       (offset (xyz 0 0 0))
       (scale (xyz 1 1 1))
       (rotate (xyz 0 0 0))
@@ -1041,7 +1041,7 @@
       (net 4 "GND") (pinfunction "B") (pintype "passive") (tstamp 0b81d818-a01f-4297-8a46-5fcfe927c75b))
     (pad "2" thru_hole circle (at 6.5 4.5) (size 1.7 1.7) (drill 1) (layers "*.Cu" "*.Mask")
       (net 4 "GND") (pinfunction "B") (pintype "passive") (tstamp d7a4b808-146a-4388-94bb-d4bf8f267b52))
-    (model "${KICAD6_3DMODEL_DIR}/Button_Switch_THT.3dshapes/SW_TH_Tactile_Omron_B3F-10xx.wrl"
+    (model "${KICAD6_3DMODEL_DIR}/Button_Switch_THT.3dshapes/SW_PUSH_6mm_H13mm.wrl"
       (offset (xyz 0 0 0))
       (scale (xyz 1 1 1))
       (rotate (xyz 0 0 0))
@@ -1172,7 +1172,7 @@
       (net 4 "GND") (pinfunction "B") (pintype "passive") (tstamp c6d9a7af-6116-4362-bab3-dae439bbbcf6))
     (pad "2" thru_hole circle (at 6.5 4.5) (size 1.7 1.7) (drill 1) (layers "*.Cu" "*.Mask")
       (net 4 "GND") (pinfunction "B") (pintype "passive") (tstamp 89ee563d-dcf1-4904-b206-b4c9d4b4ed30))
-    (model "${KICAD6_3DMODEL_DIR}/Button_Switch_THT.3dshapes/SW_TH_Tactile_Omron_B3F-10xx.wrl"
+    (model "${KICAD6_3DMODEL_DIR}/Button_Switch_THT.3dshapes/SW_PUSH_6mm_H13mm.wrl"
       (offset (xyz 0 0 0))
       (scale (xyz 1 1 1))
       (rotate (xyz 0 0 0))
@@ -1292,7 +1292,7 @@
       (net 4 "GND") (pinfunction "B") (pintype "passive") (tstamp 8982f0da-3840-4f07-9c95-e6dd6ee83531))
     (pad "2" thru_hole circle (at 6.5 4.5) (size 1.7 1.7) (drill 1) (layers "*.Cu" "*.Mask")
       (net 4 "GND") (pinfunction "B") (pintype "passive") (tstamp 448e2bd4-9912-46b3-9fde-6cb304f0e179))
-    (model "${KICAD6_3DMODEL_DIR}/Button_Switch_THT.3dshapes/SW_TH_Tactile_Omron_B3F-10xx.wrl"
+    (model "${KICAD6_3DMODEL_DIR}/Button_Switch_THT.3dshapes/SW_PUSH_6mm_H13mm.wrl"
       (offset (xyz 0 0 0))
       (scale (xyz 1 1 1))
       (rotate (xyz 0 0 0))
@@ -1439,6 +1439,11 @@
       (net 28 "Net-(J1-Pin_1)") (pinfunction "B") (pintype "passive") (tstamp ead36f30-668e-4fe5-9b42-060ade0e82fc))
     (pad "3" thru_hole oval (at 4.7 0 90) (size 1.8 3.4) (drill oval 1.2 2.8) (layers "*.Cu" "*.Mask")
       (net 1 "VCC") (pinfunction "C") (pintype "passive") (tstamp d98eba30-37f0-48ea-a6fa-f847cccc75a9))
+    (model "${KICAD7_3RD_PARTY}/3d_models/ss-12d10l3.stp"
+      (offset (xyz 0 0 0))
+      (scale (xyz 1 1 1))
+      (rotate (xyz -90 0 0))
+    )
   )
 
   (footprint "MountingHole:MountingHole_3.2mm_M3" (layer "F.Cu")
@@ -1588,10 +1593,10 @@
       (net 3 "/POT1") (pinfunction "2") (pintype "passive") (tstamp b72fb757-78f8-4042-b1b8-df66bdc22db6))
     (pad "3" thru_hole circle (at 0 -5 90) (size 1.8 1.8) (drill 1) (layers "*.Cu" "*.Mask")
       (net 4 "GND") (pinfunction "3") (pintype "passive") (tstamp 6edb2c4e-080d-4912-b8d7-480aaad9cc1a))
-    (model "${KICAD6_3DMODEL_DIR}/Potentiometer_THT.3dshapes/Potentiometer_Bourns_PTV09A-1_Single_Vertical.wrl"
-      (offset (xyz 0 0 0))
+    (model "${KICAD7_3RD_PARTY}/3d_models/R-0904N-L-25KS.step"
+      (offset (xyz 7 2.5 0))
       (scale (xyz 1 1 1))
-      (rotate (xyz 0 0 0))
+      (rotate (xyz 0 0 -90))
     )
   )
 
@@ -1875,7 +1880,7 @@
       (net 28 "Net-(J1-Pin_1)") (pinfunction "Pin_1") (pintype "passive") (tstamp 58eb58c0-4eee-4787-9760-d9385b6ee599))
     (pad "2" thru_hole oval (at 0 2.54 180) (size 1.7 1.7) (drill 1) (layers "*.Cu" "*.Mask")
       (net 4 "GND") (pinfunction "Pin_2") (pintype "passive") (tstamp f0b773ee-dfc0-4d33-a60a-861a50e83ed1))
-    (model "${KICAD6_3DMODEL_DIR}/Connector_PinHeader_2.54mm.3dshapes/PinHeader_1x02_P2.54mm_Vertical.wrl"
+    (model "${KICAD6_3DMODEL_DIR}/Connector_PinHeader_2.54mm.3dshapes/PinHeader_1x02_P2.54mm_Vertical.wrl" hide
       (offset (xyz 0 0 0))
       (scale (xyz 1 1 1))
       (rotate (xyz 0 0 0))
