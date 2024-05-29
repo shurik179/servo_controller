@@ -17,6 +17,7 @@
 
 #define PIN_POT1 1
 #define PIN_POT2 2
+#define PIN_VSENSE 3
 
 #define BUTTON_A 0
 #define BUTTON_B 1
@@ -33,6 +34,7 @@ TFT_eSPI tft = TFT_eSPI();
 
 TFT_eSprite left_spr = TFT_eSprite(&tft);
 TFT_eSprite right_spr = TFT_eSprite(&tft);
+TFT_eSprite bot_spr = TFT_eSprite(&tft);
 
 int MIN_PULSE = 600;
 int MAX_PULSE = 2400;
@@ -116,10 +118,10 @@ void set_servo(uint8_t index, int pos,TFT_eSprite * spr){
   spr->drawString(String(pulse),80, 5, GFXFF);
   spr->drawString(String(pos_f, 3),80, 55, GFXFF);
   if (index == SERVO1) {
-    spr->pushSprite(0,40);
+    spr->pushSprite(0,28);
     ledcWrite(PWM_CHANNEL1, (pulse<<14)/20000 );
   } else {
-    spr->pushSprite(165,40);
+    spr->pushSprite(165,28);
     ledcWrite(PWM_CHANNEL2, (pulse<<14)/20000 );
   }
 }
@@ -131,9 +133,15 @@ void setup() {
   delay(100);
   digitalWrite(PIN_POWER_ON, HIGH);
   digitalWrite(PIN_LCD_BL, HIGH);
+  //user buttons 
   for (int i = 0; i<4; i++) {
     pinMode(BUTTON_PINS[i], INPUT_PULLUP);
   }
+  //pots and vsense
+  pinMode(PIN_POT1, INPUT);
+  pinMode(PIN_POT2, INPUT);
+  pinMode(PIN_VSENSE, INPUT);
+  
   // PWM channels for servo control
   ledcSetup(PWM_CHANNEL1, 50, 14); //frequency 50 hz, 14 bit resolution
   ledcAttachPin(PIN_SERVO1, PWM_CHANNEL1); //attach pin to channel
@@ -153,18 +161,25 @@ void setup() {
 
   //create sprites
   // left - for servo 1
-  left_spr.createSprite(155, 105); //width = 155, height = 105
+  left_spr.createSprite(155, 100); //width = 155, height = 100
   left_spr.setTextSize(1);
   left_spr.fillSprite(TFT_BLUE);
   left_spr.setTextColor(TFT_YELLOW, TFT_BLUE);
   left_spr.setTextDatum(TC_DATUM); //top center
   left_spr.setFreeFont(&FreeSansBold24pt7b);
   //right
-  right_spr.createSprite(155, 105);
+  right_spr.createSprite(155, 100);
   right_spr.fillSprite(TFT_BLUE);
   right_spr.setTextColor(TFT_WHITE, TFT_BLUE);
   right_spr.setTextDatum(TC_DATUM); //top center
   right_spr.setFreeFont(&FreeSansBold24pt7b);
+  //bottom 
+  bot_spr.createSprite(320, 35);
+  bot_spr.fillSprite(TFT_YELLOW);
+  bot_spr.setTextColor(TFT_WHITE, TFT_YELLOW);
+  bot_spr.setTextDatum(TL_DATUM); //top left
+  bot_spr.setFreeFont(&FreeSansBold9pt7b);
+  bot_spr.drawString("No buttons pushed", 5, 2, GFXFF);
   //initial user input
   read_pot(1);
   tft.drawString("Press button to select mode: ", 5,20, GFXFF);
@@ -191,13 +206,20 @@ void setup() {
 
   tft.fillScreen(TFT_BLACK);
   tft.setTextColor(TFT_RED, TFT_BLACK);
-  tft.drawString("Range set: "+String(MIN_PULSE)+" - "+String(MAX_PULSE), 10,800, GFXFF);
+  tft.drawString("Range set: "+String(MIN_PULSE)+" - "+String(MAX_PULSE), 10,80, GFXFF);
   delay(1000);
   //reset font and color
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
   tft.setFreeFont(&FreeSans9pt7b);
   tft.fillScreen(TFT_BLACK);
-  tft.drawString("Range: "+String(MIN_PULSE)+" - "+String(MAX_PULSE), 90,150, GFXFF);
+  tft.drawString("Range: "+String(MIN_PULSE)+" - "+String(MAX_PULSE), 5,5, GFXFF);
+
+  //get and print battery voltage 
+  float bat = analogRead(PIN_VSENSE)*3.3*2/4096;
+  tft.drawString("Battery: "+String(bat,1)+" V", 185,5, GFXFF);
+ 
+    bot_spr.pushSprite(0,135);
+
 }
 
 void loop() {
@@ -208,7 +230,7 @@ void loop() {
     button_name = String(BUTTON_NAMES[PRESSED_RELEASED_BUTTON]);
     delay(500);
   }
-  tft.drawString("Button pressed: "+button_name, 10,10, GFXFF);
+  //tft.drawString("Button pressed: "+button_name, 10,10, GFXFF);
 
   set_servo(SERVO1, read_pot(PIN_POT1), &left_spr);
   set_servo(SERVO2, read_pot(PIN_POT2), &right_spr);

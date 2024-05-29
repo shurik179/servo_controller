@@ -35,8 +35,8 @@
         "other_text_upright": false,
         "pads": {
           "drill": 1.0,
-          "height": 1.7,
-          "width": 1.7
+          "height": 1.8,
+          "width": 1.8
         },
         "silk_line_width": 0.15,
         "silk_text_italic": false,
@@ -174,8 +174,7 @@
       "track_widths": [
         0.0,
         0.25,
-        1.0,
-        1.5
+        1.0
       ],
       "via_dimensions": [
         {
@@ -408,7 +407,7 @@
     "pinned_symbol_libs": []
   },
   "meta": {
-    "filename": "mainboard.kicad_pro",
+    "filename": " bottom_board.kicad_pro",
     "version": 1
   },
   "net_settings": {
@@ -444,7 +443,7 @@
       "idf": "",
       "netlist": "",
       "specctra_dsn": "",
-      "step": "mainboard.step",
+      "step": "topboard.step",
       "vrml": ""
     },
     "page_layout_descr_file": ""
