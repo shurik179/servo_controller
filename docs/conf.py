@@ -21,10 +21,10 @@ import re
 
 is_release_build = os.environ.get('READTHEDOCS') == 'True'
 
-project = 'Yozh Robot'
+project = 'Servo Controller'
 author = 'Alexander Kirillov'
 
-copyright_year = 2023
+copyright_year = 2024
 
 copyright = str(copyright_year) + ", " + str(author)
 
@@ -128,8 +128,3 @@ html_theme_options = {
 
 # Changes imgmath_image_format to svg (default png)
 imgmath_image_format = 'svg'
-
-rst_epilog = """
-.. |github| replace:: `github repository <https://github.com/shurik179/yozh>`__
-.. |library| replace:: `Library Reference`
-"""

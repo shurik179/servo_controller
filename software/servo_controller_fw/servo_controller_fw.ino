@@ -1,4 +1,7 @@
+//version
+#define FW_VERSION "1.0.0-beta2"
 
+// TFT font setup 
 #define GFXFF 1
 #define GLCD  0
 #define FONT2 2
@@ -7,24 +10,31 @@
 #define FONT7 7
 #define FONT8 8
 
+
+//pins
 #define PIN_POWER_ON 15  // LCD and battery Power Enable
 #define PIN_LCD_BL 38    // BackLight enable pin
-
+#define PIN_CTRL 13      //for swiching direction of half-duplex serial; set high for TX, low for RX
+#define PIN_VSENSE 3
 #define PIN_SERVO1_OLD 11
 
+uint8_t BUTTON_PINS[] = {43, 44, 21, 16}; //pins for buttons A -- D
+uint8_t POT_PINS[] = {1,2};      //pins for potentiometers
+uint8_t SERVO_PINS[] = {17, 12}; //pins for servos 
+
+//PWM channels, for servos 
 #define PWM_CHANNEL1 4
 #define PWM_CHANNEL2 5
 
-#define PIN_CTRL 13 //for swichin direction of hal-duplex serial; set high for TX, low for RX
-
-
-#define PIN_VSENSE 3
-
+//button names 
 #define BUTTON_A 0
 #define BUTTON_B 1
 #define BUTTON_C 2
 #define BUTTON_D 3
 #define BUTTON_NONE -1
+char BUTTON_NAMES[] = {'A', 'B', 'C', 'D'};
+//for button debouncing 
+#define DEBOUNCE_TIMEOUT  200 //200 ms
 
 #define SERVO1 0
 #define SERVO2 1
@@ -34,24 +44,19 @@
 
 
 #include "TFT_eSPI.h"
-#include "lock-xbm.h" //lock logo
+#include "lock-xbm.h" //lock icon
 TFT_eSPI tft = TFT_eSPI();
-
+// sprites 
 TFT_eSprite left_spr = TFT_eSprite(&tft);
 TFT_eSprite right_spr = TFT_eSprite(&tft);
 TFT_eSprite bot_spr = TFT_eSprite(&tft);
 int MIN_PULSE = 600;
 int MAX_PULSE = 2400;
 int current_pos[2]; //current positions of servo, ranging 0-200
-uint8_t BUTTON_PINS[] = {43, 44, 21, 16}; //pins for buttons A -- D
-uint8_t POT_PINS[] = {1,2};      //pins for potentiometers
-uint8_t SERVO_PINS[] = {17, 12}; //pins for servos 
-char BUTTON_NAMES[] = {'A', 'B', 'C', 'D'};
 int long_press_button = BUTTON_NONE; // see function update_buttons below
 int press_release_button = BUTTON_NONE; 
 int saved_positions[4][2]; //  first index is button, second - servo 
 int button_lock = BUTTON_NONE; // to keep track of button currently used to save posiiton
-#define DEBOUNCE_TIMEOUT  200 //200 ms
 uint8_t BUTTON_LAST_STATE[4]; //buttons state (LOW/HIGH)
 uint32_t BUTTON_LAST_CHANGE[4]; //time of last update in ms
 
@@ -72,6 +77,7 @@ int wait_for_button(float timeout = 5.0){
   return result;
 }
 
+// reads potentiometer value, converts and saves to surrent_pos array 
 void read_pot(uint8_t servo) {
   int32_t raw_read;
   uint32_t pos;
@@ -83,9 +89,8 @@ void read_pot(uint8_t servo) {
 }
 
 //reads all buttons and sets global variables
-// LONG_PRESS_BUTTON: contains index of button that has been pressed for more that 3 seconds
-// PRESSED_RELEASED_BUTTON: index of button that has been pressed (for short duration) and released
-
+// long_press_button: contains index of button that has been pressed for more that 3 seconds
+// press_release_button: index of button that has been pressed (for short duration) and released
 void update_buttons(){
 
   int i;
@@ -118,6 +123,8 @@ void update_buttons(){
 
 
 //sets the servo value and updates the screen
+// by default, uses current_pos array
+// if override value is porvided, uses that instead (values should be integer between 0 -200)
 void set_servo(uint8_t servo, TFT_eSprite * spr, int override = POS_NONE){
   spr->fillSprite(TFT_BLUE);
   float pos_f = current_pos[servo]*0.005;//rescale to 0.0 - 1.0
@@ -138,7 +145,7 @@ void set_servo(uint8_t servo, TFT_eSprite * spr, int override = POS_NONE){
   }
 }
 
-
+//saves current potentiometer positions to a button 
 void save_positions(int button){
     if (button == BUTTON_NONE) {return;}
     uint8_t pin = BUTTON_PINS[button];
@@ -159,7 +166,7 @@ void save_positions(int button){
     
     bot_spr.fillSprite(TFT_BLACK);
     bot_spr.setFreeFont(&FreeSansBold18pt7b);
-    bot_spr.setTextColor(TFT_YELLOW, TFT_BLACK);
+    bot_spr.setTextColor(TFT_RED, TFT_BLACK);
     bot_spr.pushSprite(0,135);
 }
 
@@ -218,7 +225,7 @@ void setup() {
   //bottom 
   bot_spr.createSprite(320, 35);
   bot_spr.fillSprite(TFT_BLACK);
-  bot_spr.setTextColor(TFT_YELLOW, TFT_BLACK);
+  bot_spr.setTextColor(TFT_RED, TFT_BLACK);
   bot_spr.setTextDatum(TL_DATUM); //top left
   bot_spr.setFreeFont(&FreeSansBold18pt7b);
   bot_spr.pushSprite(0,135);
@@ -228,6 +235,10 @@ void setup() {
   tft.drawString("A: range 800 - 2200", 5,45, GFXFF);
   tft.drawString("B: range 600 - 2400 (default)", 5,70, GFXFF);
   tft.drawString("C: range 500 - 2500", 5,95, GFXFF);
+  tft.setFreeFont(&FreeSans9pt7b);
+  tft.setTextColor(TFT_YELLOW, TFT_BLACK);
+  tft.drawString("FW version " + String(FW_VERSION), 70,140, GFXFF);
+
   int choice = wait_for_button(10.0);
   switch (choice) {
     case BUTTON_NONE:
@@ -245,7 +256,7 @@ void setup() {
       break;
   }
 
-
+  tft.setFreeFont(&FreeSans12pt7b);
   tft.fillScreen(TFT_BLACK);
   tft.setTextColor(TFT_RED, TFT_BLACK);
   tft.drawString("Range set: "+String(MIN_PULSE)+" - "+String(MAX_PULSE), 10,80, GFXFF);
