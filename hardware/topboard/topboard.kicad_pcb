@@ -4268,7 +4268,7 @@
   (gr_text "Servo controller" (at 140.25 74.25) (layer "F.SilkS") (tstamp dfc992d0-1f1b-437a-9163-338a5a358445)
     (effects (font (size 2.5 2.5) (thickness 0.4)) (justify bottom))
   )
-  (gr_text "servo_controller.rtfd.io" (at 140 79.5) (layer "F.SilkS") (tstamp fb7dd09b-4fab-47f3-82ae-6d9c6882b42e)
+  (gr_text "servo-controller.rtfd.io" (at 140 79.5) (layer "F.SilkS") (tstamp fb7dd09b-4fab-47f3-82ae-6d9c6882b42e)
     (effects (font (size 1.5 1.5) (thickness 0.2)) (justify bottom))
   )
 
