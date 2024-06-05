@@ -26,6 +26,6 @@ Availability
 ============
 The controller can be purchased from Island Robotics Tindie store: https://www.tindie.com/stores/irobotics/.
 
-All desing files and software are availabel under open source license from the project github repository, 
+All design files and software are available under open source license from the project github repository, 
 for anyone who wishes to build their own version. 
 

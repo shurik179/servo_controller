@@ -127,11 +127,11 @@ void update_buttons(){
 // if override value is porvided, uses that instead (values should be integer between 0 -200)
 void set_servo(uint8_t servo, TFT_eSprite * spr, int override = POS_NONE){
   spr->fillSprite(TFT_BLUE);
-  float pos_f = current_pos[servo]*0.005;//rescale to 0.0 - 1.0
   if (override != POS_NONE) {
-    pos_f = override*0.005;
+    current_pos[servo] = override;
     spr->drawXBitmap(4, 4, lock, lockWidth, lockHeight, TFT_BLUE, TFT_RED);
   }
+  float pos_f = current_pos[servo]*0.005;//rescale to 0.0 - 1.0
   int pulse = MIN_PULSE + pos_f*(MAX_PULSE-MIN_PULSE);
   spr->drawString(String(pulse),80, 5, GFXFF);
   spr->drawString(String(pos_f, 3),80, 55, GFXFF);

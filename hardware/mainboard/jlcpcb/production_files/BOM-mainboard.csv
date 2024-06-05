@@ -7,4 +7,8 @@ D_Schottky,D1,D_SOD-323,C191023
 SW_SPST,"SW2,SW3,SW4,SW5",SW_TH_Tactile_Omron_B3F-10xx,C2885143
 SW_SPDT,SW1,SW_XKB_SS12D10L3,C319011
 22uF,"C3,C4",C_0805_2012Metric,C45783
+Conn_01x03,"J3,J4,J5",PinHeader_1x03_P2.54mm_Vertical,C49257
 TXB0104PWR,U1,TSSOP-14_4.4x5mm_P0.65mm,C60708
+R_Potentiometer,RV2,Potentiometer_Bourns_PTV09A-1_Single_Vertical,
+T-Display-S3,U3,T-Display-S3,
+R_Potentiometer,RV1,Potentiometer_Bourns_PTV09A-1_Single_Vertical,
