@@ -145,6 +145,17 @@ void set_servo(uint8_t servo, TFT_eSprite * spr, int override = POS_NONE){
   }
 }
 
+void show_locked_button(){
+    bot_spr.setFreeFont(&FreeSansBold18pt7b);
+    bot_spr.setTextColor(TFT_RED, TFT_BLACK);
+    bot_spr.fillSprite(TFT_BLACK);
+    if (button_lock != BUTTON_NONE){
+      int x = 5 + 96*button_lock;
+      bot_spr.drawString(String(BUTTON_NAMES[button_lock]), x, 3);   
+    }
+    bot_spr.pushSprite(0,135);    
+}
+
 //saves current potentiometer positions to a button 
 void save_positions(int button){
     if (button == BUTTON_NONE) {return;}
@@ -163,11 +174,7 @@ void save_positions(int button){
     BUTTON_LAST_STATE[button] = HIGH;
     BUTTON_LAST_CHANGE[button] = millis();
     delay(200);
-    
-    bot_spr.fillSprite(TFT_BLACK);
-    bot_spr.setFreeFont(&FreeSansBold18pt7b);
-    bot_spr.setTextColor(TFT_RED, TFT_BLACK);
-    bot_spr.pushSprite(0,135);
+    show_locked_button();
 }
 
 void setup() {
@@ -289,15 +296,11 @@ void loop() {
     if (button_lock == press_release_button) {
       // we pressed currently active button again - need to release lock 
       button_lock = BUTTON_NONE;
-      bot_spr.fillSprite(TFT_BLACK);
     } else {
       //setting lock 
       button_lock = press_release_button;
-      int x = 5 + 96*press_release_button;
-      bot_spr.fillSprite(TFT_BLACK);
-      bot_spr.drawString(String(BUTTON_NAMES[button_lock]), x, 3);   
     }
-    bot_spr.pushSprite(0,135);    
+    show_locked_button();    
   }
   read_pot(SERVO1);  
   read_pot(SERVO2);
