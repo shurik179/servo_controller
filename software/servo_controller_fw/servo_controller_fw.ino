@@ -1,5 +1,5 @@
 //version
-#define FW_VERSION "1.0.0-beta2"
+#define FW_VERSION "1.0.0"
 
 // TFT font setup 
 #define GFXFF 1
@@ -16,7 +16,6 @@
 #define PIN_LCD_BL 38    // BackLight enable pin
 #define PIN_CTRL 13      //for swiching direction of half-duplex serial; set high for TX, low for RX
 #define PIN_VSENSE 3
-#define PIN_SERVO1_OLD 11
 
 uint8_t BUTTON_PINS[] = {43, 44, 21, 16}; //pins for buttons A -- D
 uint8_t POT_PINS[] = {1,2};      //pins for potentiometers
@@ -50,6 +49,8 @@ TFT_eSPI tft = TFT_eSPI();
 TFT_eSprite left_spr = TFT_eSprite(&tft);
 TFT_eSprite right_spr = TFT_eSprite(&tft);
 TFT_eSprite bot_spr = TFT_eSprite(&tft);
+TFT_eSprite battery_spr = TFT_eSprite(&tft); // for battery voltage
+
 int MIN_PULSE = 600;
 int MAX_PULSE = 2400;
 int current_pos[2]; //current positions of servo, ranging 0-200
@@ -59,6 +60,7 @@ int saved_positions[4][2]; //  first index is button, second - servo
 int button_lock = BUTTON_NONE; // to keep track of button currently used to save posiiton
 uint8_t BUTTON_LAST_STATE[4]; //buttons state (LOW/HIGH)
 uint32_t BUTTON_LAST_CHANGE[4]; //time of last update in ms
+uint32_t battery_last_update = 0; //time of last battery voltage update in ms
 
 
 
@@ -81,10 +83,9 @@ int wait_for_button(float timeout = 5.0){
 void read_pot(uint8_t servo) {
   int32_t raw_read;
   uint32_t pos;
-  raw_read = analogRead(POT_PINS[servo]) - 8;
-  if (raw_read < 0) raw_read = 0;
-  if (raw_read > 4080) raw_read = 4080; //now  ranges between 0-4080
-  pos = (raw_read*200)/4080;
+  raw_read = analogReadMilliVolts(POT_PINS[servo]);
+  if (raw_read > 3050) raw_read = 3050; //ESP32-S3 max voltage is 3.1V, everythign above it doesn't matter
+  pos = (raw_read*200)/3050;
   current_pos[servo]=pos;
 }
 
@@ -129,7 +130,7 @@ void set_servo(uint8_t servo, TFT_eSprite * spr, int override = POS_NONE){
   spr->fillSprite(TFT_BLUE);
   if (override != POS_NONE) {
     current_pos[servo] = override;
-    spr->drawXBitmap(4, 4, lock, lockWidth, lockHeight, TFT_BLUE, TFT_RED);
+    spr->drawXBitmap(4, 4, lock, lockWidth, lockHeight, TFT_BLUE, TFT_RED);//draw lock icon 
   }
   float pos_f = current_pos[servo]*0.005;//rescale to 0.0 - 1.0
   int pulse = MIN_PULSE + pos_f*(MAX_PULSE-MIN_PULSE);
@@ -138,7 +139,7 @@ void set_servo(uint8_t servo, TFT_eSprite * spr, int override = POS_NONE){
  
   if (servo == SERVO1) {
     spr->pushSprite(0,28);
-    ledcWrite(PWM_CHANNEL1, (pulse<<14)/20000 );
+    ledcWrite(PWM_CHANNEL1, (pulse<<14)/20000 ); //frequency is 50 Hz, so a cycle is 20 000 us and duty cycle fraction is (pulse_width/20 000). Resolution is 14 bits
   } else {
     spr->pushSprite(165,28);
     ledcWrite(PWM_CHANNEL2, (pulse<<14)/20000 );
@@ -156,13 +157,22 @@ void show_locked_button(){
     bot_spr.pushSprite(0,135);    
 }
 
+//shows battery voltage 
+void show_battery(){
+  battery_spr.fillSprite(TFT_BLACK);
+  float bat = analogReadMilliVolts(PIN_VSENSE)*2.0/1000.0;
+  battery_spr.drawString("Battery: "+String(bat,1)+" V", 0,5, GFXFF);
+  battery_spr.pushSprite(185,0);
+  battery_last_update = millis();
+}
+
 //saves current potentiometer positions to a button 
 void save_positions(int button){
     if (button == BUTTON_NONE) {return;}
     uint8_t pin = BUTTON_PINS[button];
     String button_name = String(BUTTON_NAMES[button]);
     
-    saved_positions[button][SERVO1]=current_pos[SERVO1]; //button D only saves position for servo 2
+    saved_positions[button][SERVO1]=current_pos[SERVO1]; 
     saved_positions[button][SERVO2]=current_pos[SERVO2];
     bot_spr.fillSprite(TFT_WHITE);
     bot_spr.setTextColor(TFT_RED, TFT_WHITE);
@@ -195,7 +205,6 @@ void setup() {
   }
   //misc
   pinMode(PIN_VSENSE, INPUT);
-  pinMode(PIN_SERVO1_OLD, INPUT);
   pinMode(PIN_CTRL, OUTPUT);
   digitalWrite(PIN_CTRL, HIGH);// set direction to TX
   // PWM channels for servo control
@@ -236,6 +245,14 @@ void setup() {
   bot_spr.setTextDatum(TL_DATUM); //top left
   bot_spr.setFreeFont(&FreeSansBold18pt7b);
   bot_spr.pushSprite(0,135);
+  //battery 
+  battery_spr.createSprite(135, 25);
+  battery_spr.fillSprite(TFT_BLACK);
+  battery_spr.setTextColor(TFT_WHITE, TFT_BLACK);
+  battery_spr.setTextDatum(TL_DATUM); //top left
+  battery_spr.setFreeFont(&FreeSans9pt7b);
+  battery_spr.pushSprite(185,0);
+  
   //initial user input
   read_pot(1);
   tft.drawString("Press button to select mode: ", 5,20, GFXFF);
@@ -273,10 +290,8 @@ void setup() {
   tft.setFreeFont(&FreeSans9pt7b);
   tft.fillScreen(TFT_BLACK);
   tft.drawString("Range: "+String(MIN_PULSE)+" - "+String(MAX_PULSE), 5,5, GFXFF);
-
-  //get and print battery voltage 
-  float bat = analogRead(PIN_VSENSE)*3.3*2/4096;
-  tft.drawString("Battery: "+String(bat,1)+" V", 185,5, GFXFF);
+  //delay(2000);
+  show_battery();
   //reset button change times 
   for (int button =0; button<4;button++){
     BUTTON_LAST_STATE[button] = HIGH;
@@ -301,6 +316,10 @@ void loop() {
       button_lock = press_release_button;
     }
     show_locked_button();    
+  }
+  //update battery reading if necessary
+  if (millis()-battery_last_update > 1000) { //update once a second
+    show_battery();
   }
   read_pot(SERVO1);  
   read_pot(SERVO2);
