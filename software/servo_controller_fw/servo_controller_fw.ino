@@ -1,5 +1,32 @@
 //version
-#define FW_VERSION "1.0.0"
+#define FW_VERSION "1.0.1"
+
+#include "Dynamixel.h"
+DynamixelInterface servo;
+
+//pins for hardware Serial1 
+#define RX1 18
+#define TX1 17
+#define BAUDRATE 76800 //this is the value used by Feetech dual mode servos. 
+                       //Dynamixel and other serial servos typically use 57600 or 115200
+//reverse-engineered register values for smart servos, see https://github.com/shurik179/smart_servo
+//they should be written to registers starting with register 0x06
+uint8_t SERVO_BLOB_REG[] = {
+  0x02,0x1E,0x00,0x05,0x00,0x0F,0x00,
+  0x2D,0x00,0x00,0x00,0x00,0x0F,0x03,0xFC,
+  0x00,0x00,0x00,0x00,0x41,0x03,0xC5,0x00,
+  0x00,0x01,0xFF,0x01,0x00,0x02,0x09,0xC4,
+  0x01,0xF4,0x03,0xE8,0x00,0x01,0x00,0x00,
+  0x00,0x00,0x03,0xE8,0x00
+};
+uint8_t SERVO_BLOB_CR[] = {
+  0x32,0x14,0x00,0x05,0x00,0x0A,0x00,
+  0x0A,0x00,0x1E,0x00,0x00,0x00,0x03,0xFF,
+  0x01,0x00,0x00,0x00,0x41,0x03,0xC5,0x01,
+  0xF4,0x01,0xFF,0x00,0x00,0x02,0x06,0x0E,
+  0x05,0xAA,0x03,0xE8,0x00,0x14,0x00,0x00,
+  0x00,0x00,0x03,0xE8,0x00
+};
 
 // TFT font setup 
 #define GFXFF 1
@@ -20,6 +47,8 @@
 uint8_t BUTTON_PINS[] = {43, 44, 21, 16}; //pins for buttons A -- D
 uint8_t POT_PINS[] = {1,2};      //pins for potentiometers
 uint8_t SERVO_PINS[] = {17, 12}; //pins for servos 
+
+
 
 //PWM channels, for servos 
 #define PWM_CHANNEL1 4
@@ -51,8 +80,8 @@ TFT_eSprite right_spr = TFT_eSprite(&tft);
 TFT_eSprite bot_spr = TFT_eSprite(&tft);
 TFT_eSprite battery_spr = TFT_eSprite(&tft); // for battery voltage
 
-int MIN_PULSE = 600;
-int MAX_PULSE = 2400;
+int min_pulse = 600;
+int max_pulse = 2400;
 int current_pos[2]; //current positions of servo, ranging 0-200
 int long_press_button = BUTTON_NONE; // see function update_buttons below
 int press_release_button = BUTTON_NONE; 
@@ -62,6 +91,9 @@ uint8_t BUTTON_LAST_STATE[4]; //buttons state (LOW/HIGH)
 uint32_t BUTTON_LAST_CHANGE[4]; //time of last update in ms
 uint32_t battery_last_update = 0; //time of last battery voltage update in ms
 
+/*
+ * BEGINNING OF FUNCTIONS
+ */
 
 
 //waits until one button is pressed and returns index of that button (0-3)
@@ -78,6 +110,83 @@ int wait_for_button(float timeout = 5.0){
   }
   return result;
 }
+
+//programs servo to continuous rotation or regular rotation
+void program_servo(){
+  bool CR = false;
+  uint8_t error = 0;
+  uint8_t servoID = 0;
+  uint8_t * blob; //pointer to binary blob - register values; either SERVO_BLOB_CR or SERVO_BLOB_REG
+  uint8_t temp;
+  uint8_t i; //index
+  tft.fillScreen(TFT_BLACK);
+  tft.setTextColor(TFT_WHITE, TFT_BLACK);
+  tft.drawString("Checking for connected servos", 5,5, GFXFF);
+  tft.drawString("(port 1 only)", 5,30, GFXFF);
+  //check servos 
+  Serial1.begin(BAUDRATE,SERIAL_8N1,RX1,TX1);
+  servo.begin(&Serial1, BAUDRATE, PIN_CTRL, HIGH);
+  delay(1500);
+  servoID = servo.ping();
+  if (servoID == 0){
+      tft.fillScreen(TFT_BLACK);
+      tft.setTextColor(TFT_RED, TFT_BLACK);
+      tft.drawString("No servo found", 20,50, GFXFF);
+      tft.drawString("Please connect servo to port 1", 20,80, GFXFF);      
+      tft.drawString("and restart the controller", 20, 110, GFXFF);
+      while(1);
+  }
+  //otherwise, we have a servo connected 
+  temp = servo.readRegisterByte(servoID, 0x15);
+  if (servo.errorByte) error=servo.errorByte;
+  tft.fillScreen(TFT_BLACK);
+  if (temp) {
+    tft.drawString("Found connected CR servo", 5,5, GFXFF);
+  } else {
+    tft.drawString("Found connected regular servo", 5,5, GFXFF);    
+  }
+  tft.drawString("Press a button to program servo", 5,30, GFXFF);
+  tft.drawString("A: regular servo", 5,55, GFXFF);
+  tft.drawString("D: continuous rotation", 5,80, GFXFF);
+  
+  int choice = wait_for_button(1000.0);
+  tft.fillScreen(TFT_BLACK);
+  if (choice == BUTTON_D) {
+    CR = true;
+    tft.drawString("Setting servo to CR mode", 5,50, GFXFF);
+    blob = SERVO_BLOB_CR;
+  } else {
+    tft.drawString("Setting servo to regular mode", 5,50, GFXFF);   
+    blob = SERVO_BLOB_REG;
+  }
+  delay(1000);
+
+  servo.writeRegisterByte(servoID, 0x34, 0x00);
+  if (servo.errorByte) error=servo.errorByte;
+  //key step, writing the blob of register values 
+  //for redundancy, we do it one byte at a time
+  for (i = 0; i < 44; i++) {
+    servo.writeRegisterByte(servoID, i+6, blob[i]);
+    if (servo.errorByte) error=servo.errorByte;
+  }
+  delay(100);
+  servo.writeRegisterByte(servoID, 0x34, 0x01);  
+  if (servo.errorByte) error=servo.errorByte;
+  tft.fillScreen(TFT_BLACK);
+  if (error) {
+    tft.setTextColor(TFT_RED, TFT_BLACK);
+    tft.drawString("Communication error 0x"+String(error, HEX), 20,50, GFXFF);
+    tft.drawString("Please restart the controller", 20, 80, GFXFF);
+    tft.drawString("to try again", 20, 110, GFXFF);
+  } else {
+    tft.setTextColor(TFT_GREEN, TFT_BLACK);
+    tft.drawString("Programming complete", 20,50, GFXFF);
+    tft.drawString("Please restart the controller", 20, 80, GFXFF);
+    tft.drawString("to continue", 20, 110, GFXFF);
+  }
+  while(1);
+}
+
 
 // reads potentiometer value, converts and saves to surrent_pos array 
 void read_pot(uint8_t servo) {
@@ -125,7 +234,7 @@ void update_buttons(){
 
 //sets the servo value and updates the screen
 // by default, uses current_pos array
-// if override value is porvided, uses that instead (values should be integer between 0 -200)
+// if override value is provided, uses that instead (values should be integer between 0 -200)
 void set_servo(uint8_t servo, TFT_eSprite * spr, int override = POS_NONE){
   spr->fillSprite(TFT_BLUE);
   if (override != POS_NONE) {
@@ -133,7 +242,7 @@ void set_servo(uint8_t servo, TFT_eSprite * spr, int override = POS_NONE){
     spr->drawXBitmap(4, 4, lock, lockWidth, lockHeight, TFT_BLUE, TFT_RED);//draw lock icon 
   }
   float pos_f = current_pos[servo]*0.005;//rescale to 0.0 - 1.0
-  int pulse = MIN_PULSE + pos_f*(MAX_PULSE-MIN_PULSE);
+  int pulse = min_pulse + pos_f*(max_pulse-min_pulse);
   spr->drawString(String(pulse),80, 5, GFXFF);
   spr->drawString(String(pos_f, 3),80, 55, GFXFF);
  
@@ -188,6 +297,7 @@ void save_positions(int button){
 }
 
 void setup() {
+  Serial.begin(57600);
   //set up pins  modes
   pinMode(PIN_POWER_ON, OUTPUT);  //enables the LCD and to run on battery
   pinMode(PIN_LCD_BL, OUTPUT);    // BackLight enable pin
@@ -259,37 +369,42 @@ void setup() {
   tft.drawString("A: range 800 - 2200", 5,45, GFXFF);
   tft.drawString("B: range 600 - 2400 (default)", 5,70, GFXFF);
   tft.drawString("C: range 500 - 2500", 5,95, GFXFF);
-  tft.setFreeFont(&FreeSans9pt7b);
   tft.setTextColor(TFT_YELLOW, TFT_BLACK);
-  tft.drawString("FW version " + String(FW_VERSION), 70,140, GFXFF);
+  tft.drawString("D: program servo", 5,120, GFXFF);
+  tft.setTextColor(TFT_BLUE, TFT_BLACK);
+  tft.setFreeFont(&FreeSans9pt7b);
+  tft.drawString("FW version " + String(FW_VERSION), 70,150, GFXFF);
 
   int choice = wait_for_button(10.0);
   switch (choice) {
     case BUTTON_NONE:
     case BUTTON_B:
-      MIN_PULSE = 600;
-      MAX_PULSE = 2400;
+      min_pulse = 600;
+      max_pulse = 2400;
       break;
     case BUTTON_A:
-      MIN_PULSE = 800;
-      MAX_PULSE = 2200;
+      min_pulse = 800;
+      max_pulse = 2200;
       break;
     case BUTTON_C:
-      MIN_PULSE = 500;
-      MAX_PULSE = 2500;
+      min_pulse = 500;
+      max_pulse = 2500;
       break;
-  }
+    case BUTTON_D:
+      program_servo();
+      break;  
+    }
 
   tft.setFreeFont(&FreeSans12pt7b);
   tft.fillScreen(TFT_BLACK);
   tft.setTextColor(TFT_RED, TFT_BLACK);
-  tft.drawString("Range set: "+String(MIN_PULSE)+" - "+String(MAX_PULSE), 10,80, GFXFF);
+  tft.drawString("Range set: "+String(min_pulse)+" - "+String(max_pulse), 10,80, GFXFF);
   delay(1000);
   //reset font and color
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
   tft.setFreeFont(&FreeSans9pt7b);
   tft.fillScreen(TFT_BLACK);
-  tft.drawString("Range: "+String(MIN_PULSE)+" - "+String(MAX_PULSE), 5,5, GFXFF);
+  tft.drawString("Range: "+String(min_pulse)+" - "+String(max_pulse), 5,5, GFXFF);
   //delay(2000);
   show_battery();
   //reset button change times 
