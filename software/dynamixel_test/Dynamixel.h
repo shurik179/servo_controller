@@ -1,6 +1,8 @@
 #ifndef Dynamixel_h
 #define Dynamixel_h
 
+//#define DXL_DEBUG //to enable debugging messages to Serial. Assumes that Serial has been previously started
+
 #define DXL_START     0xFF //header
 #define DXL_BROADCAST 0xFE
 

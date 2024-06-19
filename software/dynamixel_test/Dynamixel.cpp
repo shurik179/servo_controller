@@ -51,8 +51,10 @@ uint8_t DynamixelInterface::receivePacket(uint8_t numBytes, uint8_t * data) {
       if (checksum !=(uint8_t) ~sum ){
         // checksum failure 
         errorByte = CHECKSUM_ERROR;
-        //Serial.print("Read checksum: ");Serial.println(checksum, HEX);
-        //Serial.print("Expected checksum: ");Serial.println(~sum, HEX);
+#ifdef DXL_DEBUG        
+        Serial.print("Incoming packet checksum: ");Serial.println(checksum, HEX);
+        Serial.print("Expected checksum: ");Serial.println((uint8_t)~sum, HEX);
+#endif         
       } else {
         errorByte = data[2];
       }
@@ -114,6 +116,12 @@ uint8_t DynamixelInterface::readRegisterByte(uint8_t ID, uint8_t reg){
   uint8_t rx_buffer[4];
   sendPacket(ID, packet);
   uint8_t error = receivePacket(1, rx_buffer);
+#ifdef DXL_DEBUG
+  if (error) {
+    Serial.print("Error when reading register 0x"); Serial.println(reg, HEX);
+    Serial.print("Error code: 0x"); Serial.println(error, HEX);
+  }
+#endif      
   if (error == 0) {
     return(rx_buffer[3]);
   } else {
@@ -133,6 +141,12 @@ uint8_t DynamixelInterface::readRegister(uint8_t ID, uint8_t reg,  uint8_t numBy
                      numBytes};
   sendPacket(ID, packet);
   uint8_t error = receivePacket(numBytes, data);
+#ifdef DXL_DEBUG
+  if (error) {
+    Serial.print("Error when reading register 0x"); Serial.println(reg, HEX);
+    Serial.print("Error code: 0x"); Serial.println(error, HEX);
+  }
+#endif     
   return(error);
 }
 
@@ -142,10 +156,16 @@ uint8_t DynamixelInterface::writeRegisterByte(uint8_t ID, uint8_t reg, uint8_t v
   uint8_t packet[]={0x04, //length 
                      DXL_WRITE_DATA, //instruction
                      reg,
-                     1};
+                     value};
   
   sendPacket(ID, packet);
   uint8_t error = readStatus();
+#ifdef DXL_DEBUG
+  if (error) {
+    Serial.print("Error when writing register 0x"); Serial.println(reg, HEX);
+    Serial.print("Error code: 0x"); Serial.println(error, HEX);
+  }
+#endif   
   return(error);
 }
 //writes a multi-byte register to device
@@ -155,6 +175,12 @@ uint8_t DynamixelInterface::writeRegisterByte(uint8_t ID, uint8_t reg, uint8_t v
 uint8_t DynamixelInterface::writeRegister(uint8_t ID,uint8_t * data){
   sendPacket(ID, data);
   uint8_t error = readStatus();
+#ifdef DXL_DEBUG
+  if (error) {
+    Serial.print("Error when writing register 0x"); Serial.println(data[2], HEX);
+    Serial.print("Error code: 0x"); Serial.println(error, HEX);
+  }
+#endif     
   return(error);
 }
 
