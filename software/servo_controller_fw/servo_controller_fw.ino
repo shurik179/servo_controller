@@ -1,12 +1,21 @@
+/* Firmware for servo controller; see 
+ *  https://www.tindie.com/products/irobotics/servo-controller/
+ *  
+ *  Please use Espressif's  ESP32 core for Arduino, verison 2.* 
+ *  from https://github.com/espressif/arduino-esp32
+ *  Do not use version 3!
+ *  
+ */
+
 //version
-#define FW_VERSION "1.0.1"
+#define FW_VERSION "1.1.0"
 
 #include "Dynamixel.h"
 DynamixelInterface servo;
 
 //pins for hardware Serial1 
-#define RX1 18
-#define TX1 17
+#define RX1 11
+#define TX1 10
 #define BAUDRATE 76800 //this is the value used by Feetech dual mode servos. 
                        //Dynamixel and other serial servos typically use 57600 or 115200
 //reverse-engineered register values for smart servos, see https://github.com/shurik179/smart_servo
@@ -41,12 +50,12 @@ uint8_t SERVO_BLOB_CR[] = {
 //pins
 #define PIN_POWER_ON 15  // LCD and battery Power Enable
 #define PIN_LCD_BL 38    // BackLight enable pin
-#define PIN_CTRL 13      //for swiching direction of half-duplex serial; set high for TX, low for RX
+#define PIN_CTRL 12      //for swiching direction of half-duplex serial; set high for TX, low for RX
 #define PIN_VSENSE 3
 
 uint8_t BUTTON_PINS[] = {43, 44, 21, 16}; //pins for buttons A -- D
 uint8_t POT_PINS[] = {1,2};      //pins for potentiometers
-uint8_t SERVO_PINS[] = {17, 12}; //pins for servos 
+uint8_t SERVO_PINS[] = {10, 13}; //pins for servos 
 
 
 
