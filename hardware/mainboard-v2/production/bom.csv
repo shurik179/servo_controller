@@ -1,0 +1,17 @@
+﻿Designator,Footprint,Quantity,Value,LCSC Part #
+"C1, C4",0805,2,22uF,C45783
+"C2, C5",CP_Elec_6.3x7.7,2,220uF,C96175
+C3,0603,1,100nF,C14663
+"J1, J2",connector-1p-generic-nosilk,2,Conn_01x01,
+"J3, J4",PinHeader_1x03_P2.54mm_Vertical,2,Conn_01x03,C2937625
+J5,USB_C_Receptacle_C30167331,1,USB_C_Receptacle_PowerOnly_6P,C283540
+J6,connector-4p-generic-nosilk,1,Conn_01x04,
+"R1, R2, R3",0603,3,10K,C25804
+"R4, R5",0603,2,120k,C25808
+"R6, R7",0603,2,5.1K,C23186
+"RV1, RV2",Potentiometer_Bourns_PTV09A-1_Single_Vertical,2,R_Potentiometer,
+SW1,SW_XKB_SS12D10L3,1,SW_SPDT,C319011
+"SW2, SW3, SW4, SW5",SW_TH_Tactile_Omron_B3F-10xx,4,SW_SPST,C2885143
+U1,WSON-6-1EP_2x2mm_P0.65mm_EP1x1.6mm,1,TPS25200,
+U2,VSSOP-8_2.3x2mm_P0.5mm,1,SN74LVC2G241DCY,C10430
+U3,T-Display-S3,1,T-Display-S3,
